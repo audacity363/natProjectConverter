@@ -1,0 +1,101 @@
+Position 1 - 4: Line number
+Position 5 - 6: Always "**"
+Position 7: Line type
+    - C: Line Comment
+        - Position 23 - <EOL>
+        - need to get a prefix of "/" because some comments does not a a space after the inital "*"
+    - D: Definition
+        - Position 8: Subtype (D,E,F,K,R,S,V)
+            - D:
+                - Position 9: Unknown (Always empty)
+                - Position 10: extended length properties
+                    - I: Field is a MU
+                    - B: Next line is "DE". This line is not counted in position 19 - 22
+                - Position 11: dimensions of MU (ASCII encoded) otherwise empty (0x20)
+                - Position 12: Unknown (Always empty)
+                - POsition 13: 
+                    - *: 
+                        - Counter Variable for referred MU field (Can be defined in a DDM). Type and Length will be empty
+                        - In some old Versions the field name is not prefixed by a "C*"- This has to be checked
+                    - C: Unknown
+                        - (It seems to be that when there is somewhere a reference to this field. For syntax generation not necessary)
+                - Position 14: Extended Header definitions (HD=) see Position 19-21 for more informations
+                - Position 15 - 18: Unknown (Always empty)
+                - Position 19 - 21: How many line to read for this field definition (ASCII encoded)
+                - Position 22: Unknown (Always empty: Could be one more byte for the last field)
+                - Position 23: Field type
+                - Position 24 - 27: Field length. Could be empty/left or right aligned 
+                - Position 28: (C, G, M, P)
+                    - C: Redundant Counter Flag ???. 
+                    - G: Group head definition
+                    - M: multiples Field
+                    - P: periodic group
+                    - Otherwise empty (0x20)
+                - Position 29: Level of field (ASCII encoded)
+                - Position 30 - 61: Field Name
+                - Position 62 - <EOL>: MU length definition and inline comments. Inline comments are always prefixed with "/*"
+            - E:
+                - Position 9 - 29: Unknown (Always Empty)
+                - Position 30 - <EOL>: Property
+                    - DY == Dynamic length
+                    - LE=<number> (length in bytes which does not fit into the "DF" line)
+            - F:
+                - Position 9: Const/Redefine Flag
+                    - When Part of a Redefine: "R"
+                    - When field value is const: "C" (Will be followed by one or more DH and DI lines)
+                - Position 10: extended length properties
+                    - B: Next line is "DE". This line is not counted in position 19 - 22
+                    - I: Field is a MU
+                - Position 11: dimensions of MU (ASCII encoded) otherwise empty (0x20)
+                - Position 12: Type of init/Const for Nat editor
+                    - S: "Single value". If Constant see position 9 (in the corresponding "**I" lines will be not const/value keyword)
+                    - F: "Free form".
+                - Position 13: Filler Flag 
+                    - Const "F" when field is a filler
+                    - Otherwise empty
+                - Position 14 - 18: Unknown (Always empty)
+                - Position 19 - 21: How many line to read for this field definition (ASCII encoded)
+                - Position 22: Unknown (Always empty: Could be one more byte for the last field)
+                - Position 23: Field type
+                - Position 24 - 27: Field length. Could be empty/left or right aligned 
+                - Position 28: 
+                    - Redundant Const Flag "C". 
+                    - Redundant Const Flag "R" when subtype "R"
+                    - Otherwise empty (0x20)
+                - Position 29: Level of field (ASCII encoded)
+                - Position 30 - 61: Field Name
+                - Position 62 - <EOL>: MU length definition and inline comments. Inline comments are always prefixed with "/*"
+            - K: ????
+                - Seems to be the same structure as "F" but with fewer fields filled
+            - R: Start of redefine block
+                - Seems to be the same structure as "F" but with fewer fields filled an a redundant Flag on Position 28
+            - S: ????
+                - - Seems to be the same structure as "F" but with fewer fields filled
+            - V: View definition
+                - Position 9 - 18: Unknown (Always Empty)
+                - Position 19 - 21: How many line to read for this field definition (ASCII encoded) (here always "0")
+                - Position 22 - 27: Unknown (Always Empty)
+                - Position 28: Redundant View Flag "V". Always Filled
+                - Position 29: Level of field (ASCII encoded)
+                - Position 30 - 61: View Name
+                - Position 62 - <EOL>: Name of DDM      
+    - H: Header line for data Init
+        - Position 8: Subtype
+            - F: Following init data are entered via the "Free Form"
+            - S: Following init data are entered via the "Single value" dialog
+            - X: Following "**I" lines are extended field properties
+        - Position 9 - <EOL>: How many lines are left for the init data
+    - I: Init/Const value for last defined field
+        - Position 8 - 29: Index when MU field
+        - Position 30 - <EOL>: Init 
+            - Const and init could be missing with required ("<>")
+            - Paranthese, aphostrophes could be missing
+
+
+
+0020**DD          0   A  12 2DAY_SUP2
+
+egrep --color -a "^[0-9]{4}\*\*DD.{20}C" *.NSL *.NSG
+
+
+0060**DFC  F      2   P   2C1#BODY_SEC
